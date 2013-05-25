@@ -10,6 +10,7 @@ import (
 )
 
 func containerMemUsageHandler(w http.ResponseWriter, req *http.Request) {
+	log.Println("Request MEM from : ", req.RemoteAddr)
 	vars := mux.Vars(req)
 	name := vars["name"]
 
@@ -18,10 +19,12 @@ func containerMemUsageHandler(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	w.Write(containerMemory)
+	containerMemoryStr := strconv.FormatInt(containerMemory, 10)
+	w.Write([]byte(containerMemoryStr))
 }
 
 func containerCpuUsageHandler(w http.ResponseWriter, req *http.Request) {
+	log.Println("Request CPU from : ", req.RemoteAddr)
 	vars := mux.Vars(req)
 	name := vars["name"]
 
