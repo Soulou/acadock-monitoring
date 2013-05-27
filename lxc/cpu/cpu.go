@@ -52,7 +52,7 @@ func Monitor() {
 			previousCpuUsages[k] = v
 		}
 
-		containers, err := lxc.ListContainer()
+		containers, err := lxc.ListContainers()
 		if err != nil {
 			log.Fatalln(err)
 		}
