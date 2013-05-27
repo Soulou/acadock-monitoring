@@ -1,7 +1,7 @@
 package cpu
 
 import (
-	"Acadock/lxc"
+	"github.com/Soulou/acadock-live-lxc/lxc"
 	"fmt"
 	"log"
 	"os"

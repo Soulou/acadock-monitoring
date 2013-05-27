@@ -1,8 +1,8 @@
 package main
 
 import (
-	"Acadock/lxc/cpu"
-	"Acadock/lxc/mem"
+	"github.com/Soulou/acadock-live-lxc/lxc/cpu"
+	"github.com/Soulou/acadock-live-lxc/lxc/mem"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
