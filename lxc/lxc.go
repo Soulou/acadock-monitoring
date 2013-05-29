@@ -15,6 +15,10 @@ func ListContainers() ([]string, error) {
   if(err != nil) {
     return nil, err
   }
+  if len(output) == 0 {
+    return []string{}, nil
+  }
+
   return strings.Split(string(output), "\n"), nil
 }
 
