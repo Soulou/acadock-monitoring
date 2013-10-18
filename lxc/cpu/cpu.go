@@ -3,6 +3,7 @@ package cpu
 import (
 	"github.com/Soulou/acadock-live-lxc/lxc"
 	"fmt"
+	"github.com/Soulou/acadock-live-lxc/lxc/utils"
 	"log"
 	"os"
 	"runtime"
@@ -67,6 +68,10 @@ func Monitor() {
 	}
 }
 
-func GetUsage(name string) int64 {
-	return int64((float64((cpuUsages[name] - previousCpuUsages[name])) / float64(1e9) / float64(runtime.NumCPU())) * 100)
+func GetUsage(id_short string) int64 {
+	id , err := utils.GetFullContainerId(id_short)
+	if err != nil {
+		return -1
+	}
+	return int64((float64((cpuUsages[id] - previousCpuUsages[id])) / float64(1e9) / float64(runtime.NumCPU())) * 100)
 }

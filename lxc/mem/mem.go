@@ -2,6 +2,7 @@ package mem
 
 import (
 	"fmt"
+	"github.com/Soulou/acadock-live-lxc/lxc/utils"
 	"log"
 	"os"
 	"strconv"
@@ -13,7 +14,11 @@ const (
 )
 
 func GetUsage(name string) (int64, error) {
-	path := fmt.Sprintf("%s/%s/%s", LXC_MEM_DIR, name, LXC_MEM_USAGE_FILE)
+	id, err := utils.GetFullContainerId(name)
+	if err != nil {
+		return 0, err
+	}
+	path := fmt.Sprintf("%s/%s/%s", LXC_MEM_DIR, id, LXC_MEM_USAGE_FILE)
 	f, err := os.Open(path)
 	if err != nil {
 		log.Println("Error while opening : ", err)
