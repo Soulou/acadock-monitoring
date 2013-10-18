@@ -1,15 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Soulou/acadock-live-lxc/lxc/cpu"
 	"github.com/Soulou/acadock-live-lxc/lxc/mem"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
-func containerMemUsageHandler(w http.ResponseWriter, req *http.Request) {
+type containerMemUsageHandler struct{}
+
+func (c *containerMemUsageHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	log.Println("Request MEM from : ", req.RemoteAddr)
 	vars := mux.Vars(req)
 	name := vars["name"]
@@ -23,7 +28,9 @@ func containerMemUsageHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(containerMemoryStr))
 }
 
-func containerCpuUsageHandler(w http.ResponseWriter, req *http.Request) {
+type containerCpuUsageHandler struct{}
+
+func (c *containerCpuUsageHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	log.Println("Request CPU from : ", req.RemoteAddr)
 	vars := mux.Vars(req)
 	name := vars["name"]
@@ -33,10 +40,26 @@ func containerCpuUsageHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(containerCpuStr))
 }
 
+type defaultHandler struct{}
+
+func (h *defaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	w.WriteHeader(404)
+}
+
 func main() {
 	go cpu.Monitor()
 	router := mux.NewRouter()
-	router.HandleFunc("/containers/{name}/mem", containerMemUsageHandler)
-	router.HandleFunc("/containers/{name}/cpu", containerCpuUsageHandler)
-	http.ListenAndServe(":4244", router)
+	router.Handle("/containers/{name}/mem", handlers.LoggingHandler(os.Stdout, &containerMemUsageHandler{}))
+	router.Handle("/containers/{name}/cpu", handlers.LoggingHandler(os.Stdout, &containerCpuUsageHandler{}))
+	router.Handle("/{misc}", handlers.LoggingHandler(os.Stdout, &defaultHandler{}))
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "4244"
+	}
+	fmt.Println("Listen on", port)
+	if err := http.ListenAndServe(":"+port, router); err != nil {
+		fmt.Println("Error bindint port:", err)
+		os.Exit(1)
+	}
 }

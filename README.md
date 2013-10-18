@@ -3,6 +3,11 @@ Acadock Live LXC
 
 This webservice provides live data on LXC (LinuX Container) containers.
 
+Configuration from env
+-----------------------
+
+* `PORT`: port to bind
+
 API
 ---
 
