@@ -55,23 +55,24 @@ func Monitor() {
 
 		containers, err := lxc.ListContainers()
 		if err != nil {
-			log.Fatalln(err)
+			log.Println(err)
+			continue
 		}
 
 		for _, container := range containers {
 			n, err := cpuacctUsage(container)
 			if err != nil {
-				log.Fatalln(err)
+				log.Println(err)
 			}
 			cpuUsages[container] = n
 		}
 	}
 }
 
-func GetUsage(id_short string) int64 {
+func GetUsage(id_short string) (int64, error) {
 	id , err := utils.GetFullContainerId(id_short)
 	if err != nil {
-		return -1
+		return -1, err
 	}
-	return int64((float64((cpuUsages[id] - previousCpuUsages[id])) / float64(1e9) / float64(runtime.NumCPU())) * 100)
+	return int64((float64((cpuUsages[id] - previousCpuUsages[id])) / float64(1e9) / float64(runtime.NumCPU())) * 100), nil
 }

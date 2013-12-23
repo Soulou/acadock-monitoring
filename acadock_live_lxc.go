@@ -22,7 +22,10 @@ func containerMemUsageHandler(params martini.Params) (int, string) {
 func containerCpuUsageHandler(params martini.Params) (int, string) {
 	name := params["name"]
 
-	containerCpu := cpu.GetUsage(name)
+	containerCpu, err := cpu.GetUsage(name)
+	if err != nil {
+		return 200, err
+	}
 	containerCpuStr := strconv.FormatInt(containerCpu, 10)
 	return 200, containerCpuStr
 }
