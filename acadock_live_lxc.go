@@ -24,7 +24,7 @@ func containerCpuUsageHandler(params martini.Params) (int, string) {
 
 	containerCpu, err := cpu.GetUsage(name)
 	if err != nil {
-		return 200, err
+		return 200, err.Error()
 	}
 	containerCpuStr := strconv.FormatInt(containerCpu, 10)
 	return 200, containerCpuStr
