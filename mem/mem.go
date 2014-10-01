@@ -1,27 +1,29 @@
 package mem
 
 import (
-	"fmt"
-	"github.com/Soulou/acadock-live-lxc/lxc/utils"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/Soulou/acadock-monitoring/config"
+	"github.com/Soulou/acadock-monitoring/docker"
 )
 
 const (
-	LXC_MEM_DIR        = "/sys/fs/cgroup/memory/lxc"
 	LXC_MEM_USAGE_FILE = "memory.usage_in_bytes"
 )
 
-func GetUsage(name string) (int64, error) {
-	id, err := utils.GetFullContainerId(name)
+func GetUsage(id string) (int64, error) {
+	id, err := docker.ExpandId(id)
 	if err != nil {
+		log.Println("Error when expanding id:", err)
 		return 0, err
 	}
-	path := fmt.Sprintf("%s/%s/%s", LXC_MEM_DIR, id, LXC_MEM_USAGE_FILE)
+
+	path := config.CgroupPath("memory", id) + "/" + LXC_MEM_USAGE_FILE
 	f, err := os.Open(path)
 	if err != nil {
-		log.Println("Error while opening : ", err)
+		log.Println("Error while opening:", err)
 		return 0, err
 	}
 	defer f.Close()
@@ -29,7 +31,7 @@ func GetUsage(name string) (int64, error) {
 	buffer := make([]byte, 16)
 	n, err := f.Read(buffer)
 	if err != nil {
-		log.Println("Error while reading ", path, " : ", err)
+		log.Println("Error while reading ", path, ":", err)
 		return 0, err
 	}
 

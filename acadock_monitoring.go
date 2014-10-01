@@ -1,17 +1,17 @@
 package main
 
 import (
-	"github.com/Soulou/acadock-live-lxc/lxc/cpu"
-	"github.com/Soulou/acadock-live-lxc/lxc/mem"
-	"github.com/codegangsta/martini"
-	"os"
 	"strconv"
+
+	"github.com/Soulou/acadock-monitoring/cpu"
+	"github.com/Soulou/acadock-monitoring/mem"
+	"github.com/codegangsta/martini"
 )
 
 func containerMemUsageHandler(params martini.Params) (int, string) {
-	name := params["name"]
+	id := params["id"]
 
-	containerMemory, err := mem.GetUsage(name)
+	containerMemory, err := mem.GetUsage(id)
 	if err != nil {
 		return 500, err.Error()
 	}
@@ -20,9 +20,9 @@ func containerMemUsageHandler(params martini.Params) (int, string) {
 }
 
 func containerCpuUsageHandler(params martini.Params) (int, string) {
-	name := params["name"]
+	id := params["id"]
 
-	containerCpu, err := cpu.GetUsage(name)
+	containerCpu, err := cpu.GetUsage(id)
 	if err != nil {
 		return 200, err.Error()
 	}
@@ -33,12 +33,8 @@ func containerCpuUsageHandler(params martini.Params) (int, string) {
 func main() {
 	go cpu.Monitor()
 	r := martini.Classic()
-	r.Get("/containers/:name/mem", containerMemUsageHandler)
-	r.Get("/containers/:name/cpu", containerCpuUsageHandler)
+	r.Get("/containers/:id/mem", containerMemUsageHandler)
+	r.Get("/containers/:id/cpu", containerCpuUsageHandler)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		os.Setenv("PORT", "4244")
-	}
 	r.Run()
 }

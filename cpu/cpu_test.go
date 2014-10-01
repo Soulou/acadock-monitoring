@@ -1,8 +1,10 @@
-package mem
+package cpu
 
 import (
-	"github.com/Soulou/acadock-live-lxc/lxc"
 	"testing"
+	"time"
+
+	"github.com/Soulou/acadock-live-lxc/lxc"
 )
 
 const (
@@ -27,12 +29,12 @@ func TestGetUsage(t *testing.T) {
 		t.FailNow()
 	}
 
-	memUsage, err := GetUsage(containers[0])
-	if err != nil {
-		t.Fatal(err)
-	}
+	go Monitor()
 
-	if memUsage < 0 || memUsage > 100 {
+	time.Sleep(2 * time.Second)
+
+	cpuUsage := GetUsage(containers[0])
+	if cpuUsage < 0 || cpuUsage > 100 {
 		t.Fatal("CPU usage out of [0,100]")
 	}
 }
