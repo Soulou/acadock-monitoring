@@ -1,7 +1,7 @@
 Acadock Live LXC
 ================
 
-This webservice provides live data on LXC (LinuX Container) containers.
+This webservice provides live data on Docker containers.
 
 Configuration from env
 -----------------------
@@ -13,11 +13,11 @@ API
 
 * Memory consumption (in bytes)
 
-    `GET /containers/:name/mem`
+    `GET /containers/:id/mem`
 
 * CPU usage (percentage)
 
-    `GET /containers/:name/cpu`
+    `GET /containers/:id/cpu`
 
 ### Misc
 
