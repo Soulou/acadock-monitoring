@@ -1,7 +1,11 @@
 package main
 
 import (
+	"flag"
+	"log"
 	"strconv"
+
+	"net/http/pprof"
 
 	"github.com/Soulou/acadock-monitoring/cpu"
 	"github.com/Soulou/acadock-monitoring/mem"
@@ -31,10 +35,26 @@ func containerCpuUsageHandler(params martini.Params) (int, string) {
 }
 
 func main() {
+	doProfile := flag.Bool("profile", false, "profile app")
+	flag.Parse()
 	go cpu.Monitor()
 	r := martini.Classic()
+
 	r.Get("/containers/:id/mem", containerMemUsageHandler)
 	r.Get("/containers/:id/cpu", containerCpuUsageHandler)
+
+	if *doProfile {
+		log.Println("Enable profiling")
+		r.Get("/debug/pprof", pprof.Index)
+		r.Get("/debug/pprof/cmdline", pprof.Cmdline)
+		r.Get("/debug/pprof/profile", pprof.Profile)
+		r.Get("/debug/pprof/symbol", pprof.Symbol)
+		r.Post("/debug/pprof/symbol", pprof.Symbol)
+		r.Get("/debug/pprof/block", pprof.Handler("block").ServeHTTP)
+		r.Get("/debug/pprof/heap", pprof.Handler("heap").ServeHTTP)
+		r.Get("/debug/pprof/goroutine", pprof.Handler("goroutine").ServeHTTP)
+		r.Get("/debug/pprof/threadcreate", pprof.Handler("threadcreate").ServeHTTP)
+	}
 
 	r.Run()
 }
