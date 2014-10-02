@@ -46,7 +46,7 @@ func cpuacctUsage(container string) (int64, error) {
 	bufferStr := string(buffer)
 	bufferStr = bufferStr[:len(bufferStr)-1]
 
-	res, err := strconv.ParseInt(bufferStr, 10, strconv.IntSize)
+	res, err := strconv.ParseInt(bufferStr, 10, 64)
 	if err != nil {
 		log.Println("Failed to parse : ", err)
 		return 0, err
