@@ -36,7 +36,7 @@ func GetUsage(id string) (int64, error) {
 	}
 
 	buffer = buffer[:n-1]
-	val, err := strconv.ParseInt(string(buffer), 10, strconv.IntSize)
+	val, err := strconv.ParseInt(string(buffer), 10, 64)
 	if err != nil {
 		log.Println("Error while parsing ", string(buffer), " : ", err)
 		return 0, err
