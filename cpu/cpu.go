@@ -1,7 +1,6 @@
 package cpu
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -94,7 +93,7 @@ func GetUsage(id string) (int64, error) {
 		return -1, err
 	}
 	if _, ok := previousCpuUsages[id]; !ok {
-		return -1, errors.New("not ready")
+		return -1, nil
 	}
 	return int64((float64((cpuUsages[id] - previousCpuUsages[id])) / float64(1e9) / float64(RefreshTime)) * 100), nil
 }
