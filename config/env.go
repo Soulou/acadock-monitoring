@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 )
 
 var ENV = map[string]string{
@@ -11,6 +12,8 @@ var ENV = map[string]string{
 	"CGROUP_SOURCE": "docker",
 }
 
+var RefreshTime int
+
 func init() {
 	for k, v := range ENV {
 		if os.Getenv(k) != "" {
@@ -18,6 +21,12 @@ func init() {
 		} else {
 			os.Setenv(k, v)
 		}
+	}
+
+	var err error
+	RefreshTime, err = strconv.Atoi(ENV["REFRESH_TIME"])
+	if err != nil {
+		panic(err)
 	}
 }
 

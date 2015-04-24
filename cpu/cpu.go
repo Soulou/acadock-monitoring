@@ -1,10 +1,15 @@
 package cpu
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strconv"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/Soulou/acadock-monitoring/config"
@@ -15,19 +20,12 @@ const (
 	LXC_CPUACCT_USAGE_FILE = "cpuacct.usage"
 )
 
-var RefreshTime int
-
-func init() {
-	var err error
-	RefreshTime, err = strconv.Atoi(config.ENV["REFRESH_TIME"])
-	if err != nil {
-		panic(err)
-	}
-}
-
 var (
-	previousCpuUsages = make(map[string]int64)
-	cpuUsages         = make(map[string]int64)
+	currentSystemUsage  = make(map[string]int64)
+	previousSystemUsage = make(map[string]int64)
+	previousCpuUsages   = make(map[string]int64)
+	cpuUsages           = make(map[string]int64)
+	cpuUsagesMutex      = &sync.Mutex{}
 )
 
 func cpuacctUsage(container string) (int64, error) {
@@ -54,19 +52,18 @@ func cpuacctUsage(container string) (int64, error) {
 }
 
 func Monitor() {
-	containers := make(chan string)
-	go docker.ListenNewContainers(containers)
-	go docker.ListRunningContainers(containers)
+	containers := docker.RegisterToContainersStream()
 	for c := range containers {
+		fmt.Println("monitor cpu", c)
 		go monitorContainer(c)
 	}
 }
 
 func monitorContainer(id string) {
-	fmt.Println("monitor cpu", id)
-	tick := time.NewTicker(time.Duration(RefreshTime) * time.Second)
+	tick := time.NewTicker(time.Duration(config.RefreshTime) * time.Second)
 	for {
 		<-tick.C
+		var err error
 		usage, err := cpuacctUsage(id)
 		if err != nil {
 			if _, ok := cpuUsages[id]; ok {
@@ -75,14 +72,20 @@ func monitorContainer(id string) {
 			if _, ok := previousCpuUsages[id]; ok {
 				delete(previousCpuUsages, id)
 			}
-			log.Println("stop monitoring", id)
+			log.Println("stop monitoring", id, "reason:", err)
 			return
 		}
 
-		if prevUsage, ok := cpuUsages[id]; ok {
-			previousCpuUsages[id] = prevUsage
-		}
+		cpuUsagesMutex.Lock()
+		previousCpuUsages[id] = cpuUsages[id]
 		cpuUsages[id] = usage
+		cpuUsagesMutex.Unlock()
+
+		previousSystemUsage[id] = currentSystemUsage[id]
+		currentSystemUsage[id], err = systemUsage()
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
@@ -95,5 +98,49 @@ func GetUsage(id string) (int64, error) {
 	if _, ok := previousCpuUsages[id]; !ok {
 		return -1, nil
 	}
-	return int64((float64((cpuUsages[id] - previousCpuUsages[id])) / float64(1e9) / float64(RefreshTime)) * 100), nil
+	deltaCpuUsage := float64(cpuUsages[id] - previousCpuUsages[id])
+	deltaSystemCpuUsage := float64(currentSystemUsage[id] - previousSystemUsage[id])
+
+	return int64(deltaCpuUsage / deltaSystemCpuUsage * 100 * float64(runtime.NumCPU())), nil
+}
+
+func systemUsage() (int64, error) {
+	f, err := os.OpenFile("/proc/stat", os.O_RDONLY, 0600)
+	if err != nil {
+		return -1, err
+	}
+
+	var line string
+	buffer := bufio.NewReader(f)
+	for {
+		lineBytes, _, err := buffer.ReadLine()
+		if err != nil {
+			return -1, err
+		}
+		line = string(lineBytes)
+		if strings.HasPrefix(line, "cpu ") {
+			break
+		}
+	}
+
+	err = f.Close()
+	if err != nil {
+		return -1, err
+	}
+
+	fields := strings.Fields(string(line))
+	if len(fields) < 8 {
+		return -1, errors.New("invalid cpu line in /stat/proc: " + string(line))
+	}
+
+	sum := int64(0)
+	for i := 1; i < 8; i++ {
+		n, err := strconv.ParseInt(fields[i], 10, 64)
+		if err != nil {
+			return -1, err
+		}
+		sum += n
+	}
+
+	return sum * 1e9 / 100, nil
 }

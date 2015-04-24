@@ -9,7 +9,7 @@ var IdNotInCache = errors.New("id not found in cache")
 
 var containerIdsCache = []string{}
 
-func ExpandIdFromCache(id string) (string, error) {
+func expandIdFromCache(id string) (string, error) {
 	for _, fullId := range containerIdsCache {
 		if strings.HasPrefix(fullId, id) {
 			return fullId, nil

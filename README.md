@@ -1,5 +1,5 @@
-Acadock Live LXC
-================
+Acadock Monitoring - Docker container monitoring
+================================================
 
 This webservice provides live data on Docker containers.
 
@@ -18,6 +18,10 @@ API
 * CPU usage (percentage)
 
     `GET /containers/:id/cpu`
+
+* Network usage (bytes and percentage)
+
+    `GET /containers/:id/net`
 
 ### Misc
 

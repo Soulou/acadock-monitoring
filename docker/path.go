@@ -10,7 +10,7 @@ import (
 )
 
 func ExpandId(id string) (string, error) {
-	fullId, err := ExpandIdFromCache(id)
+	fullId, err := expandIdFromCache(id)
 	if err == nil {
 		return fullId, nil
 	}

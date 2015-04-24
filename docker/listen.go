@@ -18,7 +18,7 @@ func ListenNewContainers(ids chan string) error {
 	}
 
 	for event := range listener {
-		if event.Status == "started" {
+		if event.Status == "start" {
 			ids <- event.ID
 		}
 	}
