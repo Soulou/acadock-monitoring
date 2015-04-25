@@ -1,12 +1,18 @@
 Acadock Monitoring - Docker container monitoring
 ================================================
 
-This webservice provides live data on Docker containers.
+This webservice provides live data on Docker containers. It takes
+data from the Linux kernel control groups and from the namespace of
+the container and expose them through a HTTP API.
 
-Configuration from env
------------------------
+> The solution is still a work in progress.
 
-* `PORT`: port to bind
+Configuration
+-------------
+
+From environment
+
+* `PORT`: port to bind (4244 by default)
 
 API
 ---
@@ -15,24 +21,21 @@ API
 
     `GET /containers/:id/mem`
 
+    Return 200 OK
+    Content-Type: text/plain
+
 * CPU usage (percentage)
 
+    Return 200 OK
+    Content-Type: text/plain
     `GET /containers/:id/cpu`
 
 * Network usage (bytes and percentage)
 
+    Return 200 OK
+    Content-Type: application/json
     `GET /containers/:id/net`
-
-### Misc
-
-The service binds the port 4244
 
 ### Developers
 
 > Léo Unbekandt `<leo@unbekandt.eu>`
-
-### Reference
-
-This project is used by [Acadock](https://github.com/Soulou/acadock)
-
-It was bootstrapped during the hackathon [Hack Le Chalet 2013](http://hacklechalet.com)
